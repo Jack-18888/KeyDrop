@@ -51,6 +51,10 @@ body {
   gap: 20px;
 }
 
+.upload-wrapper:hover {
+  cursor: help;
+}
+
 /* Upload box */
 .container {
   width: 300px;
@@ -144,12 +148,35 @@ body {
   gap: 8px;
 }
 
-.file-name {
+.file-name-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   background-color: #fff;
   padding: 10px 12px;
   border-radius: 8px;
   font-size: 15px;
   color: #333;
   border: 1px solid #ddd;
-  box-shadow: 1px 1px 4px rgba(0, 0, 0, .08);
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.file-name {
+  margin: 0;
+  font-size: 15px;
+  color: #333;
+  flex-grow: 1;
+}
+
+.remove-file-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  margin-left: 10px;
+  transition: color 0.2s ease;
+}
+
+.remove-file-btn:hover {
+  color: red;
 }
