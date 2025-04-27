@@ -33,8 +33,8 @@ Users can upload files, get a unique key, and use it to securely download the fi
 
 1. **Clone the repository:**
    ```bash
-   git clone <your-repo-url>
-   cd <your-project-folder>
+   git clone https://github.com/Jack-18888/KeyDrop.git
+   cd KeyDrop
    ```
 
 2. **Install dependencies:**
