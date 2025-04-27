@@ -6,7 +6,7 @@ import os
 
 app = Flask(__name__)
 r = Redis(host='localhost', port=6379, db=0)
-save_time = 26 * 3600
+expiry_time = 26 * 3600
 
 
 @app.route("/", methods=["GET"])
@@ -28,10 +28,9 @@ def save_zip():
 
     file_key = str(uuid4())
 
-    file_data = uploaded_file.read()  # Read file as bytes
+    file_data = uploaded_file.read()
 
-    # Save the file bytes into Redis with 24-hour expiration
-    r.setex(file_key, 24 * 3600, file_data)
+    r.setex(file_key, expiry_time, file_data)
 
     return jsonify(message='File saved successfully!', key=file_key), 200
 
