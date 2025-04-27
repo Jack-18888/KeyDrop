@@ -1,0 +1,2 @@
+# KeyDrop
+file sharing platform
