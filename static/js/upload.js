@@ -62,6 +62,8 @@ uploadBtn.addEventListener('click', () => {
     fileList.push(fileInput.files[0]);
     fileInput.value = ''; // allow duplicate selection
     renderFileList(); // 👈 render on update
+    deleteBtn.style.display = 'none';
+    uploadBtn.style.display = 'none';
   }
 });
 
@@ -85,21 +87,24 @@ shareBtn.addEventListener('click', async () => {
     const formData = new FormData();
     formData.append('file', zipBlob, 'files.zip');
 
-    // const response = await fetch('https://your-server.com/upload', {
-    //   method: 'POST',
-    //   body: formData
-    // });
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    });
 
-    // if (response.ok) {
-    //   alert('Files shared successfully!');
-    //   // Reset everything
-    //   fileList = [];
-    //   fileName.textContent = 'Browse File to upload!';
-    //   deleteBtn.style.display = 'none';
-    //   shareBtn.style.display = 'none';
-    // } else {
-    //   alert('Failed to share files.');
-    // }
+    if (response.ok) {
+      alert('Files shared successfully!');
+      // Reset everything
+      fileList = [];
+      fileName.textContent = 'Browse File to upload!';
+      deleteBtn.style.display = 'none';
+      shareBtn.style.display = 'none';
+    } else {
+      alert('Failed to share files.');
+    }
+
+    fileList = [];
+    renderFileList();
   } catch (err) {
     console.error('Error while zipping/uploading:', err);
     alert('Error during upload.');
