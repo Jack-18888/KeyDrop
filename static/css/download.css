@@ -1,0 +1,91 @@
+body {
+  background-color: #f2f5f9;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+
+.page-header {
+  position: absolute;
+  top: 40px;
+  margin-top: 100px;
+  text-align: center;
+  color: #222;
+}
+
+.page-header h1 {
+  font-size: 48px;
+  margin: 0;
+}
+
+.page-header p {
+  font-size: 26px;
+  color: #555;
+  margin: 8px 0;
+}
+
+.go-download {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 10px 16px;
+  background-color: royalblue;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.go-download:hover {
+  background-color: #2e4cc4;
+}
+
+.card {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  text-align: center;
+  width: 300px;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+input[type="text"] {
+  margin-bottom: 20px;
+  padding: 10px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+button {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 100%;
+}
+
+button:hover {
+  background-color: #4338ca;
+}
+
+#messageDisplay {
+  margin-top: 20px;
+  font-size: 16px;
+  color: #ef4444; /* red color for errors */
+  word-break: break-word;
+}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Download File</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/download.css') }}">
+</head>
+<body>
+
+  <div class="page-header">
+    <h1>Share Your Files Securely</h1>
+    <p>Upload any file, and get a key to download it!</p>
+    <a href="/" class="go-download">Go to Upload Page</a>
+  </div>
+
+  <div class="card">
+    <h1>Download the File</h1>
+    <input type="text" id="keyInput" placeholder="Enter your key">
+    <button>Download</button>
+    <div id="messageDisplay"></div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/download.js') }}"></script>
+</body>
+</html>

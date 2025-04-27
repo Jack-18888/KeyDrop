@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload File</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
+</head>
+
+<body>
+
+  <div class="page-header">
+    <h1>Share Your Files Securely</h1>
+    <p>Upload any file, and get a key to download it!</p>
+    <a href="/download" class="go-download">Go to Download Page</a>
+  </div>
+
+  <div class="upload-wrapper">
+    <div class="container">
+      <div class="header" id="header">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+          <g id="SVGRepo_iconCarrier">
+            <path
+              d="M7 10V9C7 6.23858 9.23858 4 12 4C14.7614 4 17 6.23858 17 9V10C19.2091 10 21 11.7909 21 14C21 15.4806 20.1956 16.8084 19 17.5M7 10C4.79086 10 3 11.7909 3 14C3 15.4806 3.8044 16.8084 5 17.5M7 10C7.43285 10 7.84965 10.0688 8.24006 10.1959M12 12V21M12 12L15 15M12 12L9 15"
+              stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+          </g>
+        </svg>
+        <p id="file-name">Find Your Files to Share!</p>
+      </div>
+      <button id="delete-btn" style="margin-top:10px; display:none;">Delete</button>
+      <button id="upload-btn" style="margin-top:10px; display:none;">Upload</button>
+      <input id="file" type="file" style="display:none;">
+    </div>
+
+    <h2>Your Current Files</h2>
+  
+    <div class="files-display">
+      
+    </div>
+  
+    <button id="share-btn" style="margin-top:10px; display:none;">Share Files</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+</body>
+
+</html>
