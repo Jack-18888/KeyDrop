@@ -1,12 +1,12 @@
 from flask import Flask, render_template, request, jsonify, send_file
+from safeRedis import SafeRedis
 from uuid import uuid4
-from redis import Redis
 import os
 import threading
 import time
 
 app = Flask(__name__)
-r = Redis(host='localhost', port=6379, db=0)
+r = SafeRedis()
 
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
