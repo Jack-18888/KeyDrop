@@ -116,7 +116,17 @@ shareBtn.addEventListener('click', async () => {
 
   const formData = new FormData();
   fileList.forEach(file => {
-    formData.append('files', file); // 👈 important: 'files' matches Flask field
+    formData.append('files', file);
+  });
+
+  // Show loading spinner
+  Swal.fire({
+    title: 'Uploading...',
+    text: 'Please wait while we upload your files.',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
   });
 
   try {
@@ -124,6 +134,8 @@ shareBtn.addEventListener('click', async () => {
       method: 'POST',
       body: formData
     });
+
+    Swal.close(); // close loading spinner
 
     if (response.ok) {
       const data = await response.json();
@@ -136,5 +148,6 @@ shareBtn.addEventListener('click', async () => {
   } catch (err) {
     console.error('Error while uploading:', err);
     failureAlert();
+    Swal.close();
   }
 });
