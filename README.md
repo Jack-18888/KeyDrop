@@ -17,8 +17,10 @@ Users can upload files, get a unique key, and use it to securely download the fi
 - 🔐 Secure file upload and download with unique keys.
 - 🗑️ Automatic file cleanup after expiry.
 - 🛆 Supports multiple file uploads packed into a `.zip`.
-- ⚡ Beautiful UI for uploading and downloading files.
+- 💥 Modern UI and UX with SweetAlert2, Poppins font, and smooth transitions.
 - 🛡️ Fallback to in-memory storage if Redis server is unavailable.
+- ✨ Real-time upload progress bar with SweetAlert2 animations.
+- ✨ Smooth loading animation during download preparation.
 
 ## Tech Stack
 
@@ -27,6 +29,8 @@ Users can upload files, get a unique key, and use it to securely download the fi
 - **Libraries Used:**
   - Flask
   - Redis
+  - SweetAlert2
+  - JSZip
 
 ## Setup Instructions
 
@@ -54,6 +58,11 @@ Users can upload files, get a unique key, and use it to securely download the fi
 5. **Access the app:**
    Open your browser and go to `http://localhost:8000`.
 
+6. **Deploy with Gunicorn:**
+    ```bash
+    ./start_server.sh
+    ```
+
 ## Project Structure
 
 ```
@@ -73,18 +82,17 @@ Users can upload files, get a unique key, and use it to securely download the fi
 ├── uploads/          # Uploaded ZIP files (gitignored)
 ├── .gitignore
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── start_server.sh
 ```
 
 ## Notes
 
 - Uploaded files are stored in the `uploads/` directory and automatically removed after 24 hours.
 - Each upload session generates a **unique key** used for downloading.
-- Max upload size is set to **100MB**.
-
-## Screenshots
-
-> ✨ *Add screenshots here of the upload and download pages for a more appealing README!*
+- Max upload size is set to **5GB**.
+- Files are zipped dynamically on upload and delivered as a .zip during download.
+- Upload progress and download preparation are visually tracked with animated SweetAlerts.
 
 ## License
 
