@@ -6,7 +6,7 @@ const uploadBtn = document.getElementById('upload-btn');
 const fileDisplay = document.querySelector('.files-display');
 const shareBtn = document.getElementById('share-btn');
 
-var fileList = []; // will hold File objects
+var fileList = [];
 
 function renderFileList() {
   if (fileList.length === 0) {
@@ -25,13 +25,12 @@ function renderFileList() {
     </div>
   `).join("");
 
-  // Re-bind remove buttons
   const removeBtns = document.querySelectorAll('.remove-file-btn');
   removeBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', () => {
       const i = parseInt(btn.dataset.index);
       fileList.splice(i, 1);
-      renderFileList(); // 👈 recursive re-render
+      renderFileList();
     });
   });
 
@@ -58,25 +57,20 @@ function successAlert(downloadKey) {
     didOpen: () => {
       const copyBtn = document.getElementById('copy-key-btn');
       const input = document.getElementById('download-key-input');
-      
+
       copyBtn.addEventListener('click', () => {
         input.select();
         document.execCommand('copy');
-
-        // Change button text to "Copied!" for 1 second
-        const originalText = copyBtn.textContent;
         copyBtn.textContent = 'Copied!';
         copyBtn.disabled = true;
-        
         setTimeout(() => {
-          copyBtn.textContent = originalText;
+          copyBtn.textContent = 'Copy Key';
           copyBtn.disabled = false;
         }, 1000);
       });
     }
   });
 }
-
 
 function failureAlert() {
   Swal.fire({
@@ -102,49 +96,30 @@ header.addEventListener('click', () => {
 
 fileInput.addEventListener('change', () => {
   if (fileInput.files.length > 0) {
-    fileName.textContent = fileInput.files[0].name;
-    deleteBtn.style.display = 'block';
-    uploadBtn.style.display = 'block';
+    for (const file of fileInput.files) {
+      fileList.push(file);
+    }
+    fileInput.value = '';  // clear so you can re-upload same file
+    renderFileList();
   }
 });
 
 deleteBtn.addEventListener('click', () => {
-  fileInput.value = '';
-  fileName.textContent = 'Browse File to upload!';
-  deleteBtn.style.display = 'none';
-  uploadBtn.style.display = 'none';
+  resetFiles();
 });
 
-uploadBtn.addEventListener('click', () => {
-  if (fileInput.files.length > 0) {
-    fileList.push(fileInput.files[0]);
-    fileInput.value = ''; // allow duplicate selection
-    renderFileList(); // 👈 render on update
-    deleteBtn.style.display = 'none';
-    uploadBtn.style.display = 'none';
-  }
-});
-
-// Share button: Zip and upload
 shareBtn.addEventListener('click', async () => {
   if (fileList.length === 0) {
     noFilesAlert();
     return;
   }
 
-  // Create a zip file
-  const zip = new JSZip();
+  const formData = new FormData();
   fileList.forEach(file => {
-    zip.file(file.name, file);
+    formData.append('files', file); // 👈 important: 'files' matches Flask field
   });
 
   try {
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
-
-    // Upload the zip to server
-    const formData = new FormData();
-    formData.append('file', zipBlob, 'files.zip');
-
     const response = await fetch('/api/upload', {
       method: 'POST',
       body: formData
@@ -158,9 +133,8 @@ shareBtn.addEventListener('click', async () => {
     } else {
       failureAlert();
     }
-
-    renderFileList();
   } catch (err) {
-    console.error('Error while zipping/uploading:', err);
+    console.error('Error while uploading:', err);
+    failureAlert();
   }
 });

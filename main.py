@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, Response
 from safeRedis import SafeRedis
 from uuid import uuid4
 import os
 import threading
 import time
+import zipfile
+import io
 
 app = Flask(__name__)
 r = SafeRedis()
@@ -11,11 +13,11 @@ r = SafeRedis()
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-EXPIRY_TIME = 24 * 3600  # 24 hours in seconds
-CLEANUP_INTERVAL = 3600  # Cleanup every 1 hour
+EXPIRY_TIME = 24 * 3600  # 24 hours
+CLEANUP_INTERVAL = 3600  # 1 hour
 
-# Optional: limit maximum upload size
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max
+# Set large max upload size (5GB example)
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 * 1024
 
 @app.route("/", methods=["GET"])
 def get_upload_page():
@@ -26,22 +28,26 @@ def get_download_page():
     return render_template("download.html")
 
 @app.route("/api/upload", methods=["POST"])
-def save_zip():
-    uploaded_file = request.files['file']
+def save_files():
+    uploaded_files = request.files.getlist('files')  # Accept multiple files
 
-    if uploaded_file.filename == '':
-        return jsonify(message='No selected file'), 400
+    if not uploaded_files:
+        return jsonify(message='No files selected'), 400
 
     file_key = str(uuid4())
-    filename = f"{file_key}.zip"
-    save_path = os.path.join(UPLOAD_FOLDER, filename)
-    
-    uploaded_file.save(save_path)
+    folder_path = os.path.join(UPLOAD_FOLDER, file_key)
+    os.makedirs(folder_path, exist_ok=True)
 
-    # Save mapping: file_key -> filepath
-    r.setex(file_key, EXPIRY_TIME, save_path)
+    for file in uploaded_files:
+        save_path = os.path.join(folder_path, file.filename)
+        with open(save_path, 'wb') as f:
+            while chunk := file.stream.read(4096):
+                f.write(chunk)
 
-    return jsonify(message='File saved successfully!', key=file_key), 200
+    # Save folder path to Redis
+    r.setex(file_key, EXPIRY_TIME, folder_path)
+
+    return jsonify(message='Files saved successfully!', key=file_key), 200
 
 @app.route("/api/download", methods=["GET"])
 def send_zip():
@@ -50,30 +56,51 @@ def send_zip():
     if not file_key:
         return jsonify(message='No key provided'), 400
 
-    save_path = r.get(file_key)
-    if not save_path:
-        return jsonify(message='File not found or expired'), 404
+    folder_path = r.get(file_key)
+    if not folder_path:
+        return jsonify(message='Files not found or expired'), 404
 
-    save_path = save_path.decode()
+    folder_path = folder_path.decode()
 
-    if not os.path.exists(save_path):
-        return jsonify(message='File missing on server'), 404
+    if not os.path.exists(folder_path):
+        return jsonify(message='Files missing on server'), 404
 
-    return send_file(save_path, as_attachment=True)
+    # Create zip dynamically in memory
+    memory_file = io.BytesIO()
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, folder_path)  # relative name inside zip
+                zf.write(file_path, arcname=arcname)
 
-# Background cleanup thread
+    memory_file.seek(0)
+
+    return send_file(
+        memory_file,
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name=f'{file_key}.zip'
+    )
+
+# Cleanup expired folders
 def cleanup_files():
     while True:
         print("Running cleanup...")
-        for filename in os.listdir(UPLOAD_FOLDER):
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
-            file_key = filename.rsplit('.', 1)[0]  # remove '.zip'
-            if not r.exists(file_key):
-                print(f"Deleting expired file: {filename}")
-                os.remove(filepath)
+        for folder_name in os.listdir(UPLOAD_FOLDER):
+            folder_path = os.path.join(UPLOAD_FOLDER, folder_name)
+            if os.path.isdir(folder_path):
+                file_key = folder_name  # Folder name == file_key
+                if not r.exists(file_key):
+                    print(f"Deleting expired folder: {folder_path}")
+                    for root, dirs, files in os.walk(folder_path, topdown=False):
+                        for file in files:
+                            os.remove(os.path.join(root, file))
+                        for dir in dirs:
+                            os.rmdir(os.path.join(root, dir))
+                    os.rmdir(folder_path)
         time.sleep(CLEANUP_INTERVAL)
 
 if __name__ == "__main__":
-    # Start background cleanup thread
     threading.Thread(target=cleanup_files, daemon=True).start()
-    app.run(port=8000, debug=True)
+    app.run(port=8000, threaded=True)  # threaded=True for concurrent uploads in dev
