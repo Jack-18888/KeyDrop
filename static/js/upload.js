@@ -119,35 +119,48 @@ shareBtn.addEventListener('click', async () => {
     formData.append('files', file);
   });
 
-  // Show loading spinner
+  // Create XMLHttpRequest manually to track upload progress
+  const xhr = new XMLHttpRequest();
+
   Swal.fire({
-    title: 'Uploading...',
-    text: 'Please wait while we upload your files.',
+    title: 'Uploading Files...',
+    html: `
+      <div id="progress-container" style="width:100%;background:#eee;border-radius:8px;margin-top:10px;">
+        <div id="progress-bar" style="height:20px;width:0;background:royalblue;border-radius:8px;"></div>
+      </div>
+      <p id="progress-text" style="margin-top:10px;">0%</p>
+    `,
     allowOutsideClick: false,
     didOpen: () => {
       Swal.showLoading();
+    },
+    showConfirmButton: false,
+  });
+
+  xhr.upload.addEventListener('progress', (e) => {
+    if (e.lengthComputable) {
+      const percent = Math.round((e.loaded / e.total) * 100);
+      const progressBar = document.getElementById('progress-bar');
+      const progressText = document.getElementById('progress-text');
+      if (progressBar) progressBar.style.width = `${percent}%`;
+      if (progressText) progressText.textContent = `${percent}%`;
     }
   });
 
-  try {
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData
-    });
-
-    Swal.close(); // close loading spinner
-
-    if (response.ok) {
-      const data = await response.json();
-      const downloadKey = data['key'];
-      successAlert(downloadKey);
-      resetFiles();
-    } else {
-      failureAlert();
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      Swal.close();
+      if (xhr.status === 200) {
+        const data = JSON.parse(xhr.responseText);
+        const downloadKey = data['key'];
+        successAlert(downloadKey);
+        resetFiles();
+      } else {
+        failureAlert();
+      }
     }
-  } catch (err) {
-    console.error('Error while uploading:', err);
-    failureAlert();
-    Swal.close();
-  }
+  };
+
+  xhr.open('POST', '/api/upload');
+  xhr.send(formData);
 });
