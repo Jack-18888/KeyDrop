@@ -27,7 +27,6 @@ Users can upload files, get a unique key, and use it to securely download the fi
 - **Libraries Used:**
   - Flask
   - Redis
-  - Blinker, Click, Colorama, Jinja2, MarkupSafe, Werkzeug
 
 ## Setup Instructions
 
