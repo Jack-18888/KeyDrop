@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, send_file, Response
 from safeRedis import SafeRedis
 from uuid import uuid4
+import zipstream
 import os
 import threading
 import time
@@ -65,22 +66,19 @@ def send_zip():
     if not os.path.exists(folder_path):
         return jsonify(message='Files missing on server'), 404
 
-    # Create zip dynamically in memory
-    memory_file = io.BytesIO()
-    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
-        for root, dirs, files in os.walk(folder_path):
-            for file in files:
-                file_path = os.path.join(root, file)
-                arcname = os.path.relpath(file_path, folder_path)  # relative name inside zip
-                zf.write(file_path, arcname=arcname)
+    z = zipstream.ZipFile(mode='w', compression=zipstream.ZIP_DEFLATED)
 
-    memory_file.seek(0)
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            arcname = os.path.relpath(file_path, folder_path)
+            z.write(file_path, arcname)
 
-    return send_file(
-        memory_file,
+    return Response(
+        z,
         mimetype='application/zip',
-        as_attachment=True,
-        download_name=f'{file_key}.zip'
+        headers={'Content-Disposition': f'attachment; filename={file_key}.zip'},
+        direct_passthrough=True
     )
 
 # Cleanup expired folders
