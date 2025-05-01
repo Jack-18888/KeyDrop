@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, send_file, Response
+from filehandle import cstream
 from safeRedis import SafeRedis
 from uuid import uuid4
 import zipstream
@@ -41,14 +42,37 @@ def save_files():
 
     for file in uploaded_files:
         save_path = os.path.join(folder_path, file.filename)
-        with open(save_path, 'wb') as f:
-            while chunk := file.stream.read(4096):
-                f.write(chunk)
+        handle = cstream.open_write(save_path)
+
+        if not handle:
+            return jsonify(message=f'Failed to open file: {file.filename}'), 500
+        
+        while True:
+            chunk = file.stream.read(65536)
+            if not chunk:
+                break
+            success = cstream.write_chunk(handle, chunk)
+            if not success:
+                cstream.close(handle)
+                return jsonify(message=f'Failed writing chunk: {file.filename}'), 500
+            
+        cstream.close(handle)
 
     # Save folder path to Redis
     r.setex(file_key, EXPIRY_TIME, folder_path)
 
     return jsonify(message='Files saved successfully!', key=file_key), 200
+
+def stream_file_in_chunks(path, chunk_size=65536):
+    handle = cstream.open_read(path)
+    if not handle:
+        return
+    while True:
+        chunk = cstream.read_chunk(handle, chunk_size)
+        if not chunk:
+            break
+        yield chunk
+    cstream.close(handle)
 
 @app.route("/api/download", methods=["GET"])
 def send_zip():
@@ -72,7 +96,7 @@ def send_zip():
         for file in files:
             file_path = os.path.join(root, file)
             arcname = os.path.relpath(file_path, folder_path)
-            z.write(file_path, arcname)
+            z.write_iter(arcname, stream_file_in_chunks(file_path))
 
     return Response(
         z,
