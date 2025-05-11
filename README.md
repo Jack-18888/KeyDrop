@@ -85,6 +85,8 @@ Users can upload files, get a unique key, and use it to securely download the fi
 │   │   ├── upload.js
 │   │   └── download.js
 ├── uploads/          # Uploaded ZIP files (gitignored)
+├── utils/   
+│   ├── file_handle.c # Uses C script to handle file data in bytes
 ├── .gitignore
 ├── README.md
 ├── requirements.txt
