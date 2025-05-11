@@ -25,12 +25,12 @@ Users can upload files, get a unique key, and use it to securely download the fi
 ## Tech Stack
 
 - **Backend:** Python, Flask, Redis (or in-memory fallback)
-- **Frontend:** HTML, CSS, JavaScript (with JSZip and SweetAlert2)
+- **Frontend:** HTML, CSS, JavaScript (with SweetAlert2)
 - **Libraries Used:**
   - Flask
   - Redis
   - SweetAlert2
-  - JSZip
+  - C
 
 ## Setup Instructions
 
@@ -50,15 +50,20 @@ Users can upload files, get a unique key, and use it to securely download the fi
    redis-server
    ```
 
-4. **Run the Flask server:**
+4. **Compile the C uploading/downloading fle**
+    ```bash
+    gcc -shared -o fastReadAndWrite.so -fPIC file_handle.c
+    ```
+
+5. **Run the Flask server:**
    ```bash
    python main.py
    ```
 
-5. **Access the app:**
+6. **Access the app:**
    Open your browser and go to `http://localhost:8000`.
 
-6. **Deploy with Gunicorn:**
+7. **Deploy with Gunicorn:**
     ```bash
     ./start_server.sh
     ```
