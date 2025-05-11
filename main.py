@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file, Response
+from flask import Flask, render_template, request, jsonify, Response
 from filehandle import cstream
 from safeRedis import SafeRedis
 from uuid import uuid4
@@ -6,8 +6,6 @@ import zipstream
 import os
 import threading
 import time
-import zipfile
-import io
 
 app = Flask(__name__)
 r = SafeRedis()
